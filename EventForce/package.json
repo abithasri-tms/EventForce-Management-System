@@ -1,0 +1,21 @@
+{
+  "name": "eventforce-management-system",
+  "version": "1.0.0",
+  "description": "EventForce Management System - Naan Mudhalvan Event Planner CRM",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "eventforce",
+    "crm",
+    "event-management",
+    "naan-mudhalvan"
+  ],
+  "author": "Naan Mudhalvan Student Developer",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

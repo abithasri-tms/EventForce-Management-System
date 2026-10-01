@@ -1,0 +1,6 @@
+{
+  "name": "EventForce Management System",
+  "description": "EventForce Management System - Comprehensive CRM platform for event scheduling, venue reservations, vendor coordination, feedback collection, approval workflows, and analytics based on Naan Mudhalvan specification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

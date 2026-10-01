@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventForce Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js for reports & analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">EF</div>
+        <div>
+          <h2>EVENTFORCE</h2>
+          <span>Management System</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" data-tab="events">
+          <span class="icon">📅</span> Events
+        </button>
+        <button class="nav-item" data-tab="clients">
+          <span class="icon">👥</span> Clients
+        </button>
+        <button class="nav-item" data-tab="vendors">
+          <span class="icon">🤝</span> Vendors
+        </button>
+        <button class="nav-item" data-tab="venues">
+          <span class="icon">🏛️</span> Venues
+        </button>
+        <button class="nav-item" data-tab="eventVendors">
+          <span class="icon">🔗</span> Event Vendors
+        </button>
+        <button class="nav-item" data-tab="feedback">
+          <span class="icon">⭐</span> Feedback
+        </button>
+        <button class="nav-item" data-tab="approvals">
+          <span class="icon">✅</span> Approvals & Flows
+        </button>
+        <button class="nav-item" data-tab="reports">
+          <span class="icon">📈</span> Reports
+        </button>
+        <button class="nav-item" data-tab="documentation">
+          <span class="icon">📖</span> Project Docs & Viva
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-indicator">●</span> Simple JSON Database Connected
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="page-title-box">
+          <h1 id="page-title">Operations Dashboard</h1>
+          <p id="page-subtitle">Real-time overview of bookings, vendors, and satisfaction</p>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Role Switcher (Milestone 14 - 18) -->
+          <div class="role-selector-box">
+            <label for="current-role">Active Role:</label>
+            <select id="current-role" class="role-select">
+              <option value="Event Admin">Event Admin (Full Access)</option>
+              <option value="Event Coordinator">Event Coordinator</option>
+              <option value="Vendor Manager">Vendor Manager</option>
+              <option value="Client">Client (Ananya Pandey)</option>
+            </select>
+          </div>
+
+          <button id="btn-quick-batch" class="btn btn-secondary" title="Simulates nightly BatchCompleteEvents Apex job">
+            🌙 Run Nightly Batch
+          </button>
+          <button id="btn-quick-reminder" class="btn btn-primary" title="Triggers 3-Day Reminder Flow">
+            ✉️ Trigger 3-Day Reminders
+          </button>
+        </div>
+      </header>
+
+      <!-- Notification Toast / Alert Banner -->
+      <div id="alert-banner" class="alert-banner hidden"></div>
+
+      <!-- Tab Content Area -->
+      <div class="content-body">
+        
+        <!-- ================= DASHBOARD TAB ================= -->
+        <section id="tab-dashboard" class="tab-pane active">
+          <!-- KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card blue">
+              <div class="kpi-icon">📅</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Events</span>
+                <h3 id="kpi-total-events">0</h3>
+                <small id="kpi-upcoming-events">0 Upcoming</small>
+              </div>
+            </div>
+            <div class="kpi-card green">
+              <div class="kpi-icon">👥</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Clients</span>
+                <h3 id="kpi-total-clients">0</h3>
+                <small>Global & Regional</small>
+              </div>
+            </div>
+            <div class="kpi-card amber">
+              <div class="kpi-icon">🤝</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Registered Vendors</span>
+                <h3 id="kpi-total-vendors">0</h3>
+                <small id="kpi-avail-vendors">0 Available</small>
+              </div>
+            </div>
+            <div class="kpi-card purple">
+              <div class="kpi-icon">🏛️</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Venues</span>
+                <h3 id="kpi-total-venues">0</h3>
+                <small id="kpi-avail-venues">0 Available</small>
+              </div>
+            </div>
+            <div class="kpi-card teal">
+              <div class="kpi-icon">⭐</div>
+              <div class="kpi-info">
+                <span class="kpi-label">Avg Feedback Rating</span>
+                <h3 id="kpi-avg-rating">0.0 / 5</h3>
+                <small id="kpi-total-feedback">Based on 0 reviews</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="card-header">
+                <h3>Upcoming Events by Month (Salesforce Milestone 13)</h3>
+                <span class="badge">Donut Report</span>
+              </div>
+              <div class="chart-body">
+                <canvas id="chart-month"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-header">
+                <h3>Events by Type & Budget</h3>
+                <span class="badge">Breakdown</span>
+              </div>
+              <div class="chart-body">
+                <canvas id="chart-type"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-header">
+                <h3>Event Lifecycle Status</h3>
+                <span class="badge">Status Flow</span>
+              </div>
+              <div class="chart-body">
+                <canvas id="chart-status"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action & Live Notification Log -->
+          <div class="dashboard-details-grid">
+            <div class="detail-card">
+              <div class="card-header">
+                <h3>Pending Cancellation Requests</h3>
+                <button class="btn btn-sm btn-outline" onclick="app.switchTab('approvals')">View All</button>
+              </div>
+              <div id="dashboard-pending-list" class="mini-list">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <div class="card-header">
+                <h3>Recent Automated Email / Alert Logs</h3>
+                <span class="badge info">Milestones 6 & 7</span>
+              </div>
+              <div id="dashboard-notif-list" class="mini-list">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= EVENTS TAB ================= -->
+        <section id="tab-events" class="tab-pane">
+          <div class="action-bar">
+            <div class="search-filters">
+              <input type="text" id="event-search" class="input-search" placeholder="Search event by name or ID...">
+              <select id="event-filter-type" class="select-filter">
+                <option value="">All Types</option>
+                <option value="Wedding">Wedding</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Birthday">Birthday</option>
+                <option value="Anniversary">Anniversary</option>
+                <option value="Festival">Festival</option>
+                <option value="Concert">Concert</option>
+                <option value="Other">Other</option>
+              </select>
+              <select id="event-filter-status" class="select-filter">
+                <option value="">All Statuses</option>
+                <option value="Planned">Planned</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending Cancellation">Pending Cancellation</option>
+                <option value="Canceled">Canceled</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+            <button id="btn-add-event" class="btn btn-primary" onclick="app.openEventModal()">
+              + New Event
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Event Name</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Client</th>
+                  <th>Venue</th>
+                  <th>Budget</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= CLIENTS TAB ================= -->
+        <section id="tab-clients" class="tab-pane">
+          <div class="action-bar">
+            <div class="search-filters">
+              <input type="text" id="client-search" class="input-search" placeholder="Search client by name, email, or city...">
+            </div>
+            <button id="btn-add-client" class="btn btn-primary" onclick="app.openClientModal()">
+              + New Client
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th>Country</th>
+                  <th>Address</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= VENDORS TAB ================= -->
+        <section id="tab-vendors" class="tab-pane">
+          <div class="action-bar">
+            <div class="search-filters">
+              <input type="text" id="vendor-search" class="input-search" placeholder="Search vendor...">
+              <select id="vendor-filter-service" class="select-filter">
+                <option value="">All Service Types</option>
+                <option value="Catering">Catering</option>
+                <option value="Decor">Decor</option>
+                <option value="Photography">Photography</option>
+                <option value="Videography">Videography</option>
+                <option value="Lighting">Lighting</option>
+                <option value="Stage Setup">Stage Setup</option>
+                <option value="Makeup Artist">Makeup Artist</option>
+                <option value="DJ/Music">DJ/Music</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Hosting/Anchor">Hosting/Anchor</option>
+              </select>
+              <select id="vendor-filter-status" class="select-filter">
+                <option value="">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="Booked">Booked</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <button id="btn-add-vendor" class="btn btn-primary" onclick="app.openVendorModal()">
+              + New Vendor
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vendor ID</th>
+                  <th>Vendor Name</th>
+                  <th>Service Type</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vendors-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= VENUES TAB ================= -->
+        <section id="tab-venues" class="tab-pane">
+          <div class="action-bar">
+            <div class="search-filters">
+              <input type="text" id="venue-search" class="input-search" placeholder="Search venue by name or address...">
+              <select id="venue-filter-status" class="select-filter">
+                <option value="">All Availability</option>
+                <option value="Available">Available</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Not Available">Not Available</option>
+              </select>
+            </div>
+            <button id="btn-add-venue" class="btn btn-primary" onclick="app.openVenueModal()">
+              + New Venue
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Venue ID</th>
+                  <th>Venue Name</th>
+                  <th>Address</th>
+                  <th>Capacity</th>
+                  <th>Map URL</th>
+                  <th>Availability Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="venues-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= EVENT VENDORS TAB (JUNCTION OBJECT) ================= -->
+        <section id="tab-eventVendors" class="tab-pane">
+          <div class="action-bar">
+            <p class="section-desc">
+              <strong>EventVendor Junction Object (Many-to-Many):</strong> Links Events with multiple specialized Vendors (Catering, Decor, Stage, Lighting, Audio, etc.)
+            </p>
+            <button id="btn-add-event-vendor" class="btn btn-primary" onclick="app.openEventVendorModal()">
+              + Assign Vendor to Event
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Assignment ID</th>
+                  <th>Event Name</th>
+                  <th>Event Date</th>
+                  <th>Vendor Name</th>
+                  <th>Service Type</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="event-vendors-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= FEEDBACK TAB ================= -->
+        <section id="tab-feedback" class="tab-pane">
+          <div class="action-bar">
+            <div class="search-filters">
+              <input type="text" id="feedback-search" class="input-search" placeholder="Search comments, client or event...">
+              <select id="feedback-filter-rating" class="select-filter">
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </div>
+            <button id="btn-add-feedback" class="btn btn-primary" onclick="app.openFeedbackModal()">
+              + Submit Feedback
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Feedback ID</th>
+                  <th>Client</th>
+                  <th>Event</th>
+                  <th>Rating</th>
+                  <th>Comments</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="feedback-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= APPROVALS & WORKFLOWS TAB ================= -->
+        <section id="tab-approvals" class="tab-pane">
+          <div class="grid-two-cols">
+            <!-- Approval Queue -->
+            <div class="panel-card">
+              <div class="card-header">
+                <h3>Event Cancellation Approval Process</h3>
+                <span class="badge warning">Salesforce Milestone 6</span>
+              </div>
+              <p class="panel-help">
+                When an event cancellation is submitted, it enters <strong>Pending Cancellation</strong>. The Event Admin / Manager can review the reason, then <strong>Approve</strong> (releases venue to Available and updates status to Canceled) or <strong>Reject</strong> (reverts status to Confirmed).
+              </p>
+
+              <div id="approvals-queue-container" class="queue-container">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+
+            <!-- Email Notification Simulation Log -->
+            <div class="panel-card">
+              <div class="card-header">
+                <h3>Workflow Automation & Email Dispatch Log</h3>
+                <span class="badge info">Milestones 6 & 7 Logs</span>
+              </div>
+              <p class="panel-help">
+                Displays the automated emails triggered by record changes, cancellation approvals, and the 3-day reminder flow.
+              </p>
+
+              <div id="email-log-container" class="log-container">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= REPORTS TAB ================= -->
+        <section id="tab-reports" class="tab-pane">
+          <div class="reports-header-box">
+            <div class="report-tabs-bar">
+              <button class="sub-tab-btn active" onclick="app.showReport('upcoming-month')">1. Upcoming Events by Month</button>
+              <button class="sub-tab-btn" onclick="app.showReport('events-by-type')">2. Events by Type</button>
+              <button class="sub-tab-btn" onclick="app.showReport('events-by-status')">3. Events by Status</button>
+              <button class="sub-tab-btn" onclick="app.showReport('venues-utilization')">4. Available Venues</button>
+              <button class="sub-tab-btn" onclick="app.showReport('vendors-directory')">5. Available Vendors</button>
+              <button class="sub-tab-btn" onclick="app.showReport('feedback-summary')">6. Client Feedback Summary</button>
+              <button class="sub-tab-btn" onclick="app.showReport('budget-summary')">7. Event Budget Summary</button>
+            </div>
+            <button class="btn btn-secondary" onclick="app.exportReportCSV()">📥 Export to CSV</button>
+          </div>
+
+          <div id="report-output-card" class="report-output-card">
+            <!-- Dynamic report content -->
+          </div>
+        </section>
+
+        <!-- ================= DOCUMENTATION & VIVA TAB ================= -->
+        <section id="tab-documentation" class="tab-pane">
+          <div class="doc-container">
+            <div class="doc-card">
+              <h2>📘 Naan Mudhalvan EventForce Project Guide & Viva Defense</h2>
+              <p>Everything a student needs to explain, demonstrate, and defend this project with full marks.</p>
+
+              <div class="doc-section">
+                <h3>1. Salesforce Requirement to Web Application Mapping</h3>
+                <div class="table-responsive">
+                  <table class="doc-table">
+                    <thead>
+                      <tr>
+                        <th>Salesforce Concept (From PDF)</th>
+                        <th>Web Application Implementation</th>
+                        <th>Files & Logic</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Custom Objects</strong> (Event__c, Client__c, Vendor__c, Venue__c, Feedback__c)</td>
+                        <td>Modular JSON collections & REST API controllers</td>
+                        <td><code>data/eventforce.json</code>, <code>server.js</code></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Junction Object</strong> (EventVendor__c for Many-to-Many)</td>
+                        <td>EventVendor relational linking model with eventId & vendorId</td>
+                        <td><code>/api/event-vendors</code></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Lookup Filter</strong> (Feedback: Event__c filtered by Client__c)</td>
+                        <td>Client-side dynamic dropdown filter + backend relationship check</td>
+                        <td>Only events belonging to selected client are shown</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Validation Rules</strong> (Regex Email, Non-negative Budget, Required Fields)</td>
+                        <td>Frontend form validation + backend Express validator</td>
+                        <td><code>REGEX(Email__c, "^[a-zA-Z0-9._]+@[a-zA-Z0-9.]+\\.[a-zA-Z]{2,}$")</code></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Formula Field</strong> (Event_Budget__c calculated from Event Type)</td>
+                        <td>Auto-budget calculator based on Wedding (50k), Corporate (30k), Festival (60k), etc.</td>
+                        <td>Auto-fills budget when user picks Event Type</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Apex Trigger</strong> (PreventDoubleBooking on Event__c)</td>
+                        <td>Server-side validation checking if same venue is booked on same date</td>
+                        <td>Blocks duplicate event with descriptive error</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Apex Class & Trigger</strong> (VenueStatusHelper on Event__c)</td>
+                        <td>Venue reservation automation: Confirmed → Reserved, Canceled → Available</td>
+                        <td><code>recalculateVenueStatus()</code> in <code>server.js</code></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Approval Process</strong> (Event Cancellation Process)</td>
+                        <td>Multi-step workflow: Pending Cancellation → Admin Review → Approved/Rejected</td>
+                        <td>Approvals tab with action buttons and email logs</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Record-Triggered Flow</strong> (3-Day Client Reminder)</td>
+                        <td>Scheduled / triggered reminder service checking upcoming dates (<= 3 days)</td>
+                        <td>Simulates email dispatch with templated subject & body</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Batchable & Schedulable Apex</strong> (BatchCompleteEvents)</td>
+                        <td>Asynchronous batch runner marking past events as Completed</td>
+                        <td>"Run Nightly Batch" button executing logic on past dates</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Profiles, Roles & Sharing Rules</strong> (Event Admin, Coordinator, Vendor Mgr, Client)</td>
+                        <td>Role switcher enforcing read/write permissions per user profile</td>
+                        <td>Dynamic UI permission guards</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Lightning Reports & Dashboards</strong> (Upcoming by Month Report)</td>
+                        <td>Interactive KPI metrics, Chart.js Donut/Bar charts, filterable report tables</td>
+                        <td>Dashboard & Reports tabs with real-time analytics</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="doc-section">
+                <h3>2. Top 15 Viva Questions & Instant Answers for Students</h3>
+                <div class="faq-list">
+                  <div class="faq-item">
+                    <h4>Q1: What is the purpose of the EventForce Management System?</h4>
+                    <p><strong>A:</strong> EventForce is a CRM platform designed for Event Planner Solutions to automate event scheduling, client management, venue reservations, vendor assignments, feedback gathering, and cancellation workflows with real-time analytics.</p>
+                  </div>
+                  <div class="faq-item">
+                    <h4>Q2: How is the many-to-many relationship between Event and Vendor implemented?</h4>
+                    <p><strong>A:</strong> Using an intermediate Junction Object called <code>EventVendor</code>. Each record holds an <code>eventId</code>, a <code>vendorId</code>, and the specific service type provided, allowing an event to have multiple vendors and a vendor to serve multiple events.</p>
+                  </div>
+                  <div class="faq-item">
+                    <h4>Q3: How do you prevent double-booking of venues?</h4>
+                    <p><strong>A:</strong> In Salesforce, an Apex Trigger (<code>PreventDoubleBooking</code>) checks incoming event dates and venue IDs against existing records. In this web application, the backend API verifies if any non-canceled event exists for the selected venue and date before allowing creation or update.</p>
+                  </div>
+                  <div class="faq-item">
+                    <h4>Q4: What is the Event Cancellation Approval Process?</h4>
+                    <p><strong>A:</strong> When a user initiates a cancellation, the event enters <code>Pending Cancellation</code> status. An email alert is sent to coordinators. An Event Admin reviews the request: approving it marks the event <code>Canceled</code> and releases the venue back to <code>Available</code>; rejecting it reverts the event to <code>Confirmed</code>.</p>
+                  </div>
+                  <div class="faq-item">
+                    <h4>Q5: What is the Lookup Filter implemented on the Feedback module?</h4>
+                    <p><strong>A:</strong> As specified in Milestone 4 (Page 28-29 of the PDF), when a client is selected on the feedback form, the Event selector strictly filters to display only events that belong to that chosen client (e.g. Ramesh sees only Ramesh's events).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+  <!-- Event Modal -->
+  <div id="modal-event" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-event-title">Create New Event</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-event')">&times;</button>
+      </div>
+      <form id="form-event" onsubmit="app.handleSaveEvent(event)">
+        <input type="hidden" id="event-id">
+        <div class="form-group">
+          <label>Event Name *</label>
+          <input type="text" id="event-name" required placeholder="e.g. Anand & Priya Wedding">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Event Date *</label>
+            <input type="date" id="event-date" required>
+          </div>
+          <div class="form-group">
+            <label>Event Type *</label>
+            <select id="event-type" required onchange="app.onEventTypeChanged()">
+              <option value="Wedding">Wedding</option>
+              <option value="Corporate">Corporate</option>
+              <option value="Birthday">Birthday</option>
+              <option value="Anniversary">Anniversary</option>
+              <option value="Festival">Festival</option>
+              <option value="Concert">Concert</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client *</label>
+            <select id="event-client" required></select>
+          </div>
+          <div class="form-group">
+            <label>Venue *</label>
+            <select id="event-venue" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="event-status" required>
+              <option value="Planned">Planned</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending Cancellation">Pending Cancellation</option>
+              <option value="Canceled">Canceled</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Budget (₹ / $) * <small>(Formula default applies if empty)</small></label>
+            <input type="number" id="event-budget" min="0" placeholder="50000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description / Notes</label>
+          <textarea id="event-description" rows="2" placeholder="Brief event notes..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-event')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Client Modal -->
+  <div id="modal-client" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-client-title">Add New Client</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-client')">&times;</button>
+      </div>
+      <form id="form-client" onsubmit="app.handleSaveClient(event)">
+        <input type="hidden" id="client-id">
+        <div class="form-group">
+          <label>Client Full Name *</label>
+          <input type="text" id="client-name" required placeholder="e.g. Ramesh Kumar">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email * <small>(Validated via regex)</small></label>
+            <input type="email" id="client-email" required placeholder="name@domain.com">
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="client-phone" required placeholder="+91 98400 12345">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country *</label>
+            <select id="client-country" required>
+              <option value="India">India</option>
+              <option value="USA">USA</option>
+              <option value="Switzerland">Switzerland</option>
+              <option value="Dubai">Dubai</option>
+              <option value="Singapore">Singapore</option>
+              <option value="France">France</option>
+              <option value="Philippines">Philippines</option>
+              <option value="Saudi Arabia">Saudi Arabia</option>
+              <option value="Thailand">Thailand</option>
+              <option value="Maldives">Maldives</option>
+              <option value="Sri Lanka">Sri Lanka</option>
+              <option value="Nepal">Nepal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>City *</label>
+            <select id="client-city" required>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Chennai">Chennai</option>
+              <option value="Bangalore">Bangalore</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Delhi">Delhi</option>
+              <option value="New York">New York</option>
+              <option value="Geneva">Geneva</option>
+              <option value="Riyadh">Riyadh</option>
+              <option value="Chicago">Chicago</option>
+              <option value="Los Angeles">Los Angeles</option>
+              <option value="Bern">Bern</option>
+              <option value="Lucerne">Lucerne</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea id="client-address" rows="2" placeholder="Street and landmark..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-client')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Vendor Modal -->
+  <div id="modal-vendor" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-vendor-title">Add New Vendor</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-vendor')">&times;</button>
+      </div>
+      <form id="form-vendor" onsubmit="app.handleSaveVendor(event)">
+        <input type="hidden" id="vendor-id">
+        <div class="form-group">
+          <label>Vendor / Agency Name *</label>
+          <input type="text" id="vendor-name" required placeholder="e.g. Royal Feast Caterers">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Service Type *</label>
+            <select id="vendor-service" required>
+              <option value="Catering">Catering</option>
+              <option value="Decor">Decor</option>
+              <option value="Photography">Photography</option>
+              <option value="Videography">Videography</option>
+              <option value="Lighting">Lighting</option>
+              <option value="Stage Setup">Stage Setup</option>
+              <option value="Makeup Artist">Makeup Artist</option>
+              <option value="DJ/Music">DJ/Music</option>
+              <option value="Transportation">Transportation</option>
+              <option value="Hosting/Anchor">Hosting/Anchor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="vendor-status" required>
+              <option value="Available">Available</option>
+              <option value="Booked">Booked</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="vendor-email" required placeholder="contact@vendor.com">
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="vendor-phone" required placeholder="+91 98400 00000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Rating (1 to 5)</label>
+          <input type="number" id="vendor-rating" min="1" max="5" step="0.1" value="4.8">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-vendor')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Vendor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Venue Modal -->
+  <div id="modal-venue" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-venue-title">Add New Venue</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-venue')">&times;</button>
+      </div>
+      <form id="form-venue" onsubmit="app.handleSaveVenue(event)">
+        <input type="hidden" id="venue-id">
+        <div class="form-group">
+          <label>Venue Name *</label>
+          <input type="text" id="venue-name" required placeholder="e.g. Grand Lotus Ballroom">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Capacity (Persons) *</label>
+            <input type="number" id="venue-capacity" min="10" required placeholder="500">
+          </div>
+          <div class="form-group">
+            <label>Availability Status *</label>
+            <select id="venue-status" required>
+              <option value="Available">Available</option>
+              <option value="Reserved">Reserved</option>
+              <option value="Not Available">Not Available</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address *</label>
+          <textarea id="venue-address" rows="2" required placeholder="Full street address and city..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Location Map URL</label>
+          <input type="url" id="venue-location" placeholder="https://maps.google.com/?q=...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-venue')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Venue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EventVendor Assignment Modal -->
+  <div id="modal-event-vendor" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Assign Vendor to Event</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-event-vendor')">&times;</button>
+      </div>
+      <form id="form-event-vendor" onsubmit="app.handleSaveEventVendor(event)">
+        <div class="form-group">
+          <label>Event *</label>
+          <select id="assign-event" required></select>
+        </div>
+        <div class="form-group">
+          <label>Vendor *</label>
+          <select id="assign-vendor" required onchange="app.onVendorSelectedForAssign()"></select>
+        </div>
+        <div class="form-group">
+          <label>Service Type</label>
+          <input type="text" id="assign-service" placeholder="e.g. Stage Decor & Flowers">
+        </div>
+        <div class="form-group">
+          <label>Special Instructions / Notes</label>
+          <textarea id="assign-notes" rows="2" placeholder="Time of arrival, equipment needed..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-event-vendor')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Vendor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Feedback Modal with Lookup Filter Logic -->
+  <div id="modal-feedback" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Submit Client Feedback</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-feedback')">&times;</button>
+      </div>
+      <form id="form-feedback" onsubmit="app.handleSaveFeedback(event)">
+        <div class="form-group">
+          <label>Client *</label>
+          <select id="feedback-client" required onchange="app.onFeedbackClientChange()"></select>
+        </div>
+        <div class="form-group">
+          <label>Event * <small class="text-info">(Lookup Filter: Only events of this client are shown)</small></label>
+          <select id="feedback-event" required></select>
+        </div>
+        <div class="form-group">
+          <label>Rating (1 to 5 Stars) *</label>
+          <div class="star-rating-select">
+            <select id="feedback-rating" required>
+              <option value="5">⭐⭐⭐⭐⭐ (5 - Outstanding)</option>
+              <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+              <option value="3">⭐⭐⭐ (3 - Average)</option>
+              <option value="2">⭐⭐ (2 - Below Average)</option>
+              <option value="1">⭐ (1 - Poor)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Comments / Testimonial</label>
+          <textarea id="feedback-comments" rows="3" placeholder="Share your experience..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-feedback')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cancellation Request Modal -->
+  <div id="modal-cancel-request" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Request Event Cancellation</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-cancel-request')">&times;</button>
+      </div>
+      <form id="form-cancel-request" onsubmit="app.handleSaveCancellationRequest(event)">
+        <input type="hidden" id="cancel-event-id">
+        <p id="cancel-event-info" class="modal-intro"></p>
+        <div class="form-group">
+          <label>Reason for Cancellation *</label>
+          <textarea id="cancel-reason" rows="3" required placeholder="State reason (e.g. client rescheduling, weather, travel issue)..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-cancel-request')">Close</button>
+          <button type="submit" class="btn btn-danger">Submit for Approval</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Controller -->
+  <script src="js/app.js"></script>
+</body>
+</html>
